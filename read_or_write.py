@@ -17,6 +17,7 @@ def main():
         print('o sa scriem')
     print(options, args)   
 
+
 if __name__ == "__main__":
     main()
 
