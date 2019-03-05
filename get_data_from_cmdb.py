@@ -29,7 +29,8 @@ left join ApplicationViews.ciIps cip on ac.hinumber = cip.ci
     print "IP".ljust(10), ":", IP, "\n\n"
    
 
-CI =[
+def main():
+    CI =[
 "CI00066986",
 "CI00066987",
 "CI00074369",
@@ -44,7 +45,7 @@ CI =[
 ]
 
 
-for ci in CI:
-    get_data(ci)    
+    for ci in CI:
+        get_data(ci)    
 
 
