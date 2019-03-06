@@ -18,24 +18,24 @@ def get_data(CI):
 from ApplicationViews.component ac
 left join ApplicationViews.ciIps cip on ac.hinumber = cip.ci
   where hinumber = '{}';""".format(CI)
-    try:
-        cmdb.cursor.execute(query)  
-    except:
-        print "Error: Unable to get data for {}\n\n".format(CI)
+    cmdb.cursor.execute(query)  
     output = cmdb.cursor.fetchall()
-
-    if len(output) > 1:
-        for i in range(0, len(output)):
-            IPs.append(str(output[i][4]))
+    if len(output) == 0:
+        data_gathered = {"ERROR": "Unable to get data for {}.".format(CI)
+                       }
     else:
-        IPs.append(str(output[0][4]))
+        if len(output) > 1:
+            for i in range(0, len(output)):
+                IPs.append(str(output[i][4]))
+        else:
+            IPs.append(str(output[0][4]))
 
-    data_gathered = {'CI': output[0][0],
+        data_gathered = {'CI': output[0][0],
             'Hostname': output[0][1],
             'Domain': output[0][2],
             'OS': output[0][3],
             'IP': '; '.join(IPs),
-           }
+               }
     return data_gathered
 
 
@@ -43,6 +43,7 @@ def main():
     CI =[
 "CI00066986",
 "CI00066987",
+"CINOCI"
 ]
 
     for ci in CI:
@@ -51,4 +52,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
