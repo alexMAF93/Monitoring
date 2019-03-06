@@ -5,8 +5,15 @@ from cmdb import Usd12
 import sys
 
 
+def print_dict(dictionary):
+    for k, v in dictionary.iteritems():
+        print str(k).ljust(10), ':', str(v)
+    print('\n\n')
+
+
 def get_data(CI):
     cmdb = Usd12()
+    IPs = []
     query = """select hinumber, hostname, domain, os, cip.IPNumber
 from ApplicationViews.component ac
 left join ApplicationViews.ciIps cip on ac.hinumber = cip.ci
@@ -17,17 +24,21 @@ left join ApplicationViews.ciIps cip on ac.hinumber = cip.ci
         print e
         return False
     output = cmdb.cursor.fetchall()
-    HI = output[0][0]
-    HOSTNAME = output[0][1]
-    DOMAIN = output[0][2]
-    OS = output[0][3]
-    IP = output[0][4]
-    print "HI".ljust(10), ":", HI
-    print "HOSTNAME".ljust(10), ":", HOSTNAME
-    print "DOMAIN".ljust(10), ":", DOMAIN
-    print "OS".ljust(10), ":", OS
-    print "IP".ljust(10), ":", IP, "\n\n"
-   
+
+    if len(output) > 1:
+        for i in range(0, len(output)):
+            IPs.append(str(output[i][4]))
+    else:
+        IPs.append(str(output[0][4]))
+
+    data_gathered = {'CI': output[0][0],
+            'Hostname': output[0][1],
+            'Domain': output[0][2],
+            'OS': output[0][3],
+            'IP': '; '.join(IPs),
+           }
+    return data_gathered
+
 
 def main():
     CI =[
@@ -46,6 +57,10 @@ def main():
 
 
     for ci in CI:
-        get_data(ci)    
+        print_dict(get_data(ci))
 
+
+
+if __name__ == "__main__":
+    main()
 
