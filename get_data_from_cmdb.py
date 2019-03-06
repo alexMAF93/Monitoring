@@ -8,7 +8,7 @@ import sys
 def print_dict(dictionary):
     for k, v in dictionary.iteritems():
         print str(k).ljust(10), ':', str(v)
-    print('\n\n')
+    print('\n')
 
 
 def get_data(CI):
@@ -20,9 +20,8 @@ left join ApplicationViews.ciIps cip on ac.hinumber = cip.ci
   where hinumber = '{}';""".format(CI)
     try:
         cmdb.cursor.execute(query)  
-    except Exception as e:
-        print e
-        return False
+    except:
+        print "Error: Unable to get data for {}\n\n".format(CI)
     output = cmdb.cursor.fetchall()
 
     if len(output) > 1:
@@ -44,21 +43,10 @@ def main():
     CI =[
 "CI00066986",
 "CI00066987",
-"CI00074369",
-"CI00073795",
-"HI97358",
-"CI00065339",
-"CI00065340",
-"CI00042070",
-"CI00042071",
-"CI00042072",
-"CI00042085",
 ]
-
 
     for ci in CI:
         print_dict(get_data(ci))
-
 
 
 if __name__ == "__main__":
