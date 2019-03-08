@@ -2,7 +2,7 @@
 
 
 BASE_CMD="serviced service attach Production/Zenoss.resmgr/Infrastructure/RabbitMQ"
-#$BASE_CMD "rabbitmqctl list_queues -p /zenoss messages consumers memory name| grep zenoss.queues.hub.invalidations" > /var/tmp/to_kill
+$BASE_CMD "rabbitmqctl list_queues -p /zenoss messages consumers memory name| grep zenoss.queues.hub.invalidations" > /var/tmp/to_kill
 
 
 line_nmb=1
