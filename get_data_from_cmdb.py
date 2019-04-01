@@ -40,17 +40,14 @@ left join ApplicationViews.ciIps cip on ac.hinumber = cip.ci
 
 
 def main():
-    CI =[
-"CI00066986",
-"CI00066987",
-"CINOCI"
-]
+    with open(sys.argv[1]) as f:
+        CI = f.readlines()
 
     for ci in CI:
+        ci = ci.replace('\n', '').strip()
         print_dict(get_data(ci))
 
 
 if __name__ == "__main__":
     main()
-
 
