@@ -10,7 +10,6 @@ def check_snmp_oid(COM_STRING, IP, OID):
     max_tries = 2
     current_try = 0
     command = "snmpwalk -v2c -c %s %s -On %s" % (COM_STRING, IP, OID)
-    return_message = "NOT_OK"
     dict_snmpwalk = {}
     while current_try < max_tries:
         try:
@@ -26,7 +25,7 @@ def check_snmp_oid(COM_STRING, IP, OID):
                     dict_snmpwalk[line.split('=')[0].strip()] = line.split('=')[1].strip()
                 break
         except:
-            return return_message
+            return ""
     return dict_snmpwalk
 
 
@@ -48,6 +47,7 @@ def main():
 
     dict_services = {}
     return_code = 0
+    event_message = 'The snmpwalk command works'
 
     if options.IP and options.community and options.services:
         IP = options.IP
@@ -70,7 +70,8 @@ def main():
     running_services = check_snmp_oid(COM_STRING, IP, hrSWRunName)
     running_states = check_snmp_oid(COM_STRING, IP, hrSWRunStatus)
     running_parameters = check_snmp_oid(COM_STRING, IP, hrSWRunParameters)
-    if running_services != "NOT_OK":
+
+    if running_services and running_states and running_parameters:
         for service, count in dict_services.iteritems():
             for k,v in running_services.iteritems():
                 if service in v:
@@ -84,14 +85,17 @@ def main():
                     if 'runn' in running_states[OID]:
                         dict_services[service] += 1
         msg = print_dictionary(dict_services)
+        
 
     else:
-        msg = 'The snmpwalk command does not work; cannot list running processes'
+        msg = print_dictionary(dict_services)
+        event_message = "Snmpwalk command does not work"
         return_code = 2
 
-    print msg
+    print event_message, '|', msg
     sys.exit(return_code)
     
 
 if __name__ == "__main__":
     main()
+
