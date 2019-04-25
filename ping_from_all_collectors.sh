@@ -3,13 +3,17 @@
 
 read -p "The IP goes here: " IP
 
-
-for i in 'SharedCollector' 'CrelanCollector' 'Realm1Collector' 'Realm2Collector' ArgentaCollector AvrnCollector DeltaCollector DllCollector EandisCollector EccCollector FloreCollector NlCollector RivCollector SibCollector ViennaCollector SteinfeldCollector AlrijneCollector
+printf "Getting the list of collectors...\n"
+for i in `/usr/bin/serviced service status --show-fields 'Name'  |/usr/bin/grep Collector`
 do
-	printf "Trying from ${i}...\n"
-	serviced service attach ${i}/zenping "ping -c 3 $IP"
+	printf "\nTrying from ${i}...\n"
+	serviced service attach ${i}/zenping "ping -c 3 $IP" 2>&1 >/dev/null
 	if [[ $? -eq 0 ]]
 	then
-		break
+        	printf "It works from ${i}\n"
+                break
+        else
+		printf "Cannot ping ${IP} from ${i}...\n"
 	fi
 done
+
