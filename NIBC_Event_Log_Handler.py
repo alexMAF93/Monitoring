@@ -6,17 +6,18 @@ import sys
 import ast
 import re
 import argparse
+import json
 
 
 # function that returns an event
 def event_handler(message, event_class='/Cegeka/Eventlog', severity=4):
     return {
         'eventClass': '%s' % event_class,
-        'eventKey': '',
-        'component': '',
+        'eventKey': 'MDR Application',
+        'component': 'MDR Application',
         'severity': severity,
-        'message': '%s' % message,
-        'summary': '%s' % message,
+        'message': 'Alert on CI00062554 - mdrprda401 - %s' % message,
+        'summary': 'Alert on CI00062554 - mdrprda401 - %s' % message,
     }
 
 
@@ -31,10 +32,10 @@ def check_if_in_time_interval(time_checked, begin, end):
 
 
 # function that retrieves the output from a winrs command and
-#  parses it into a string without new lines
-def retrive_output(COMMAND):
+#  returns it as a dictionary or a string
+def retrieve_output(COMMAND):
+    (output, errors) = Popen(COMMAND, stdout=PIPE, stderr=PIPE).communicate()
     try:
-        (output, errors) = Popen(COMMAND, stdout=PIPE, stderr=PIPE).communicate()
         # if the output of the winrs command is a string that looks like a dictionary,
         # it will be returned as one
         output_json = ast.literal_eval(output)
@@ -136,9 +137,10 @@ def main():
 # https://www.timeanddate.com/holidays/belgium/2022
     ]
 
+    # this one should never appear
     if not args.ip_address or not args.username or not args.password or not args.dcip:
-        data['events'].append(event_handler("ERROR: Credentials not provided."))
-        print data
+        data['events'].append(event_handler("ERROR: Credentials not provided.", event_class='/Cmd/Fail', severity=5))
+        print json.dumps(data)
         sys.exit(2)
 
     # check if it's weekend
@@ -164,22 +166,39 @@ def main():
                '-x', 'powershell -Outputformat TEXT -COMMAND "Get-WinEvent -FilterHashtable @{logname=\'application\';StartTime=\'' + OneHourAgo + '\';} | Format-Table TimeCreated,ID,Message -wrap -HideTableHeaders"',
                ]
 
-        output = retrive_output(COMMAND)
+        output = retrieve_output(COMMAND)
         if not output:
-            data['events'].append(event_handler("ERROR: Cannot parse output. Check if WinRM is working properly."))
-            print data
+            data['events'].append(event_handler("ERROR: Cannot parse output. Check if WinRM works or the username, password, ip and kdc.", event_class='/Cmd/Fail', severity=3))
+            print json.dumps(data)
             sys.exit(2)
+        else:
+            # I added these events with severity 0 because once an event like this was raised
+            #  it would never clear
+            data['events'].append(event_handler("ERROR: Cannot parse output. Check if WinRM works or the username, password, ip and kdc.", event_class='/Cmd/Fail', severity=0))
 
         # if the output of the winrs command is a dictionary, then 
         # it only retrieves the value of the stdout key
         if isinstance(output, dict):
+            data['events'].append(event_handler("ERROR: Unknown format. Cannot parse output.", event_class='/Cmd/Fail', severity=0))
             parsed_output = parse_output(output['stdout'])
+            if output['exit_code'] != 0:
+                if 'No events were found that match the specified selection' in output['stderr'][0]:
+                    print json.dumps(data)
+                    sys.exit(0)
+                else:
+                    data['events'].append(event_handler("ERROR: The winrs command failed.", event_class='/Cmd/Fail', severity=3))
+                    print json.dumps(data)
+                    sys.exit(2)
+            else:
+                data['events'].append(event_handler("ERROR: The winrs command failed.", event_class='/Cmd/Fail', severity=0))
+                parsed_output = parse_output(output['stdout'])
         # if the output is a string, only remove the whitespaces and the header
         elif isinstance(output, str):
+            data['events'].append(event_handler("ERROR: Unknown format. Cannot parse output.", event_class='/Cmd/Fail', severity=0))
             parsed_output = re.sub('\s+', ' ', output).replace('TimeCreated Id Message ----------- -- -------', '').strip().split()
         else:
-            data['events'].append(event_handler("ERROR: Cannot parse output. Check if WinRM is working properly."))
-            print data
+            data['events'].append(event_handler("ERROR: Unknown format. Cannot parse output.", event_class='/Cmd/Fail', severity=3))
+            print json.dumps(data)
             sys.exit(2)
 
         events_dict = {} # dictionary with events from event viewer
@@ -233,39 +252,39 @@ def main():
         #  certain time intervals
         # the event id is the key
         # the first two values from the list represent the time interval
-        #  when the script checks if the event appearead in the interval
+        #  when the script checks if the event appeared in the interval
         #  defined by the last two values
-        # For example: '450': ['11:41 AM', '12:00 PM', '11:20 AM', '11:40 PM']
-        #  if the Now variable has a value between 11:41 AM', '12:00 PM' the script
+        # For example: '450': ['11:41 AM', '12:35 PM', '11:20 AM', '11:40 PM']
+        #  if the Now variable has a value between 11:41 AM', '12:35 PM' the script
         #  checks if an event with id 450 has been generated between '11:20 AM', '11:40 PM'
         #  the first 2 values must always form an interval that it's after 
         #  the last value
         check_dict = {
-    '450': ['11:41 AM', '12:00 PM', '11:20 AM', '11:40 PM'],
-    '451': ['12:11 PM', '12:31 PM', '11:55 AM', '12:10 PM'],
-    '452': ['1:11 PM', '1:31 PM', '12:55 PM', '1:10 PM'],
-    '453': ['2:41 PM', '3:01 PM', '2:25 PM', '2:40 PM'],
-    '454': ['4:36 PM', '4:56 PM', '4:20 PM', '4:35 PM'],
-    '455': ['4:36 PM', '4:56 PM', '4:20 PM', '4:35 PM'],
-    '456': ['7:51 PM', '8:11 PM', '7:35 PM', '7:50 PM'],
-    '457': ['4:11 PM', '4:31 PM', '3:55 PM', '4:10 PM'],
-    '458': ['5:21 PM', '5:41 PM', '5:00 PM', '5:20 PM'],
-    '459': ['5:46 PM', '6:06 PM', '5:15 PM', '5:45 PM'],
-    '460': ['1:26 PM', '1:46 PM', '1:05 PM', '1:25 PM'],
-    '465': ['5:11 PM', '5:31 PM', '4:50 PM', '5:10 PM'],
-    '466': ['5:16 PM', '5:36 PM', '4:55 PM', '5:15 PM'],
-    '467': ['5:11 PM', '5:31 PM', '4:50 PM', '5:10 PM'],
-    '468': ['2:11 PM', '2:31 PM', '1:50 PM', '2:10 PM'],
-    '471': ['5:06 PM', '5:26 PM', '4:50 PM', '5:05 PM'],
-    '472': ['5:06 PM', '5:26 PM', '4:50 PM', '5:05 PM'],
-    '473': ['2:11 PM', '2:31 PM', '1:55 PM', '2:10 PM'],
-    '475': ['8:11 PM', '8:31 PM', '7:55 PM', '8:10 PM'],
-    '476': ['1:56 PM', '2:16 PM', '1:40 PM', '1:55 PM'],
-    '477': ['5:26 PM', '5:46 PM', '5:10 PM', '5:25 PM'],
-    '478': ['5:16 PM', '5:36 PM', '4:55 PM', '5:10 PM'],
-    #480 TBD
-    #486 TBD
-    #487 TBD
+    '450': ['11:41 AM', '12:35 PM', '11:20 AM', '11:40 AM'],
+    '451': ['12:11 PM', '1:05 PM', '11:55 AM', '12:10 PM'],
+    '452': ['1:11 PM', '2:05 PM', '12:55 PM', '1:10 PM'],
+    '453': ['2:41 PM', '3:35 PM', '2:25 PM', '2:40 PM'],
+    '454': ['4:36 PM', '5:30 PM', '4:20 PM', '4:35 PM'],
+    '455': ['4:36 PM', '5:30 PM', '4:20 PM', '4:35 PM'],
+    '456': ['7:51 PM', '8:45 PM', '7:35 PM', '7:50 PM'],
+    '457': ['4:11 PM', '5:05 PM', '3:55 PM', '4:10 PM'],
+    '458': ['5:21 PM', '6:15 PM', '5:00 PM', '5:20 PM'],
+    '459': ['5:46 PM', '6:40 PM', '5:15 PM', '5:45 PM'],
+    '460': ['1:26 PM', '2:20 PM', '1:05 PM', '1:25 PM'],
+    '465': ['5:11 PM', '6:05 PM', '4:50 PM', '5:10 PM'],
+    '466': ['5:16 PM', '6:10 PM', '4:55 PM', '5:15 PM'],
+    '467': ['5:11 PM', '6:05 PM', '4:50 PM', '5:10 PM'],
+    '468': ['2:11 PM', '3:05 PM', '1:50 PM', '2:10 PM'],
+    '471': ['5:06 PM', '6:00 PM', '4:50 PM', '5:05 PM'],
+    '472': ['5:06 PM', '6:00 PM', '4:50 PM', '5:05 PM'],
+    '473': ['2:11 PM', '3:05 PM', '1:55 PM', '2:10 PM'],
+    '475': ['8:11 PM', '9:05 PM', '7:55 PM', '8:10 PM'],
+    '476': ['1:56 PM', '2:50 PM', '1:40 PM', '1:55 PM'],
+    '477': ['5:26 PM', '6:20 PM', '5:10 PM', '5:25 PM'],
+    '478': ['5:16 PM', '6:05 PM', '4:55 PM', '5:10 PM'],
+    '480': ['2:11 PM', '3:05 PM', '1:55 PM', '2:10 PM'],
+    '486': ['5:16 PM', '6:05 PM', '4:55 PM', '5:10 PM'],
+    '487': ['5:06 PM', '6:00 PM', '4:50 PM', '5:05 PM'],
                 }
 
         for id, timestamps in check_dict.iteritems():
@@ -283,10 +302,10 @@ def main():
         # the key represents the message of the event that must be present in event viewer only in
         #  the time interval defined by the last two values in the list.
         # the check is performed in the time interval defined by the first two values in the list
-        for msg, timestamps in {'MDR PUBLISH of interestrate_sonia': ['10:46 AM', '11:06 AM', '10:30 AM', '10:45 AM'],
-                        'MDR PUBLISH of zerocurve': ['5:46 PM', '6:06 PM', '5:30 PM', '5:45 PM'],
-                        'MDR PUBLISH of zerocapvolatility': ['5:51 PM', '6:11 PM', '5:35 PM', '5:50 PM'],
-                        'MDR PUBLISH of interestrate_polling': ['7:46 PM', '8:06 PM', '7:40 PM', '7:45 PM']
+        for msg, timestamps in {'MDR PUBLISH of interestrate_sonia': ['10:46 AM', '11:40 AM', '10:30 AM', '10:45 AM'],
+                        'MDR PUBLISH of zerocurve': ['5:46 PM', '6:40 PM', '5:30 PM', '5:45 PM'],
+                        'MDR PUBLISH of zerocapvolatility': ['5:51 PM', '6:45 PM', '5:35 PM', '5:50 PM'],
+                        'MDR PUBLISH of interestrate_polling': ['7:46 PM', '8:40 PM', '7:40 PM', '7:45 PM']
                         }.iteritems():
             alerts.extend(check_if_event_ok(events_dict, Now, timestamps[0], timestamps[1], timestamps[2], timestamps[3], event_message=msg))
 
@@ -294,8 +313,9 @@ def main():
         if alerts:
             data['events'].extend(alerts)
 
-    print data
+    print json.dumps(data)
 
 
 if __name__ == "__main__":
     main()
+
