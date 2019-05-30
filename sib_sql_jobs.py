@@ -8,10 +8,10 @@ import argparse
 import json
 
 
-def event_handler(message, event_class='/Cegeka/Eventlog', severity=4):
+def event_handler(message, event_class='/Cegeka/Eventlog', severity=4, eventKey=""):
     return {
         'eventClass': '%s' % event_class,
-        'eventKey': 'sql job',
+        'eventKey': eventKey,
         'component': 'sql job',
         'severity': severity,
         'message': message,
@@ -57,7 +57,7 @@ def main():
 	ip = str(args.ip_address)
 	user = str(args.username)
 	password = str(args.password)
-	dcip = str(args.password)
+	dcip = str(args.dcip)
 
 	cluster_output = run_command(ip, user, password, dcip, "Get-ClusterGroup")
 	if not cluster_output:
@@ -67,9 +67,10 @@ def main():
 	database_server = []
 	for line in cluster_output:
 		line = str(line)
-		for word in line.split():
-			if 'BE-DES-APS-02' in word.upper():
-				database_server.append(word)
+		if 'online' in line.lower():
+			for word in line.split():
+				if 'BE-DES-APS' in word.upper():
+					database_server.append(word)
 
 	if len(set(database_server)) > 1:
 		data['events'].append(event_handler("Error: Cannot retrieve the node where the databases are running.", event_class='/Cmd/Fail', severity=4))
@@ -81,7 +82,10 @@ def main():
 		SERVERS_DICT = {
 				'BE-DES-APS-025': '10.32.16.21',
 				'BE-DES-APS-026': '10.32.16.22',
+				'BE-DES-APS-901': '10.32.18.24',
+				'BE-DES-APS-902': '10.32.18.25',
 		}
+
 		if SERVERS_DICT.get(current_server, None):
 			jobs = run_command(SERVERS_DICT[current_server], user, password, dcip, PowerShell)
 			jobs_dict = {}
@@ -101,9 +105,9 @@ def main():
 				for job in jobs_dict:
 					message = "SQL job %s failed. Details: %s" % (job, print_dict(jobs_dict[job]))
 					severity = 0
-					if jobs_dict[job]['LastRunOutcome'] != "Succeeded":
+					if jobs_dict[job]['LastRunOutcome'] != "Succeeded" and jobs_dict[job]['isEnabled'] == "True":
 						severity = 4
-					data['events'].append(event_handler(message, event_class='/Cmd/Fail', severity=severity))
+					data['events'].append(event_handler(message, event_class='/Cmd/Fail', severity=severity, eventKey=job))
 		else:
 			data['events'].append(event_handler("Unknown IP for %s" % current_server, event_class='/Cmd/Fail', severity=4))
 	print json.dumps(data)
@@ -111,3 +115,5 @@ def main():
 
 if __name__ == "__main__":
 	main()
+
+
