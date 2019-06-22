@@ -8,6 +8,7 @@ import argparse
 import json
 
 
+# Function that generates the event
 def event_handler(message, event_class='/Cegeka/Eventlog', severity=4, eventKey=""):
     return {
         'eventClass': '%s' % event_class,
