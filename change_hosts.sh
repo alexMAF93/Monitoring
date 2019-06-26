@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 
+# testing the ssh key
 
 usage() {
 cat<<EOF
