@@ -47,5 +47,5 @@ host=`echo $line | awk '{print $11}'`
 
 
 printf "Container found on $host\n"
-ssh $host "docker ps -a | grep -q $1 && docker stop grep $1"
+ssh $host "docker stop grep $1"
 
