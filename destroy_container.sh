@@ -15,7 +15,8 @@ then
 fi
 
 
-line=`grep -wF $1 /tmp/search_serviced/serviced_status || echo N_OK`
+line=`grep -wnF $1 /tmp/search_serviced/serviced_status || echo N_OK`
+CollectorLines=`cat /tmp/search_serviced/serviced_status | grep -n Collector | awk '{print $1 $2}' | sort -nr || echo N_OK` 
 if [[ $line == 'N_OK' ]]
 then
         line=`serviced service status | grep -wF $1 || echo N_OK`
@@ -24,7 +25,37 @@ then
 		printf "Cannot find the container ... \n"
 		exit 27
 	fi
+
+        if [[ "$CollectorLines" == "N_OK" ]]
+	then
+		CollectorLines=`serviced service status | grep Collector | awk '{print $1 $2}' | sort -nr`
+        fi
 fi
+
+
+line_no=`echo $line | awk '{print $1}' | cut -d':' -f1`
+host=`echo $line | awk '{print $12}'`
+type=`echo $line | awk '{print $2}' | cut -d'/' -f1`
+instance_number=`echo $line | awk '{print $2}' | cut -d'/' -f2`
+
+for current_line in $CollectorLines
+do
+	line_nmb=`echo $current_line | cut -d: -f1`
+        collector=`echo $current_line | cut -d: -f2`
+        if [[ $line_no -gt $line_nmb ]]
+	then
+		Collector=$collector
+		break
+	fi
+	unset line_nmb
+        unset collector
+done
+
+
+printf "\n%-15s : %-s\n" "Collector" "$Collector"
+printf "%-15s : %-s\n" "Host" "$host"
+printf "%-15s : %-s\n" "Container type" "$type"
+printf "%-15s : %-s\n\n" "Instance number" "$instance_number"
 
 
 # if it's a Crelan zencommand container, ask for confirmation
@@ -43,15 +74,11 @@ then
 fi
 
 
-host=`echo $line | awk '{print $11}'`
-type=`echo $line | awk '{print $1}' | cut -d'/' -f1`
-instance_number=`echo $line | awk '{print $1}' | cut -d'/' -f2`
-
-
-printf "\n%-16s : %-10s\n" "Hostname" "$host"
-printf "%-16s : %-10s\n" "Container type" "$type"
-printf "%-16s : %-10s\n\n" "Instance number" "$instance_number"
-
-
-ssh $host "docker stop $1" && printf "Container destroyed\n\n"
+destroyed=`ssh $host "docker stop $1 || echo N_OK"`
+if [[ "$destroyed" == "$1" ]]
+then
+	printf "$destroyed was destroyed\n\n"
+else
+	printf "ERROR: Cannot destroy this container\n\n"
+fi
 
