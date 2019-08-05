@@ -15,13 +15,13 @@ then
 fi
 
 
-line=`grep -w $1 /tmp/search_serviced/serviced_status || echo N_OK`
+line=`grep -wF $1 /tmp/search_serviced/serviced_status || echo N_OK`
 if [[ $line == 'N_OK' ]]
 then
-        line=`serviced service status | grep -w $1 || echo N_OK`
+        line=`serviced service status | grep -wF $1 || echo N_OK`
         if [[ $line == "N_OK" ]]
   	then
-		printf "The container was not found ... \n"
+		printf "Cannot find the container ... \n"
 		exit 27
 	fi
 fi
@@ -30,7 +30,7 @@ fi
 # if it's a Crelan zencommand container, ask for confirmation
 if [[ "$line" =~ "zencommand" ]] && [[ "$line" =~ "crelan" ]]
 then
-	read -p "This is a Crelan zencommand container. Are you sure you want to destroy it? [y/N]" confirm
+	read -p "This is a Crelan zencommand container. Are you sure you want to destroy it? [y/n] " confirm
 	case "$confirm" in
 		y|Y) ;;
 		n|N) printf "The container will not be destroyed\n"
@@ -44,8 +44,14 @@ fi
 
 
 host=`echo $line | awk '{print $11}'`
+type=`echo $line | awk '{print $1}' | cut -d'/' -f1`
+instance_number=`echo $line | awk '{print $1}' | cut -d'/' -f2`
 
 
-printf "Container found on $host\n"
-ssh $host "docker stop grep $1"
+printf "\n%-16s : %-10s\n" "Hostname" "$host"
+printf "%-16s : %-10s\n" "Container type" "$type"
+printf "%-16s : %-10s\n\n" "Instance number" "$instance_number"
+
+
+ssh $host "docker stop $1" && printf "Container destroyed\n\n"
 
