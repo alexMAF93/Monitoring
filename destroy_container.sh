@@ -19,17 +19,21 @@ line=`grep -wnF $1 /tmp/search_serviced/serviced_status || echo N_OK`
 CollectorLines=`cat /tmp/search_serviced/serviced_status | grep -n Collector | awk '{print $1 $2}' | sort -nr || echo N_OK` 
 if [[ $line == 'N_OK' ]]
 then
-        line=`serviced service status | grep -wF $1 || echo N_OK`
+        SERV_STATUS="/tmp/status_serviced_`date +"%m-%d-%y"`"
+        serviced service status > $SERV_STATUS
+        line=`grep -wF $1 $SERV_STATUS || echo N_OK`
         if [[ $line == "N_OK" ]]
   	then
 		printf "Cannot find the container ... \n"
+		rm $SERV_STATUS
 		exit 27
 	fi
 
         if [[ "$CollectorLines" == "N_OK" ]]
 	then
-		CollectorLines=`serviced service status | grep Collector | awk '{print $1 $2}' | sort -nr`
+		CollectorLines=`grep Collector $SERV_STATUS | awk '{print $1 $2}' | sort -nr`
         fi
+	rm $SERV_STATUS
 fi
 
 
