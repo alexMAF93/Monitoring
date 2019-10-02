@@ -24,10 +24,11 @@ def run_command(ip, user, password, dcip, command):
                    ])
         COMMAND.extend(['-x', 'powershell -Outputformat TEXT -COMMAND "' + str(command) + '"'])
         (output, errors) = Popen(COMMAND,stdout=PIPE,stderr=PIPE).communicate()
+        print output
         print errors
         if not errors:
                 try:
-                        return ' '.join(ast.literal_eval(output)['stdout']).split()
+                        return ast.literal_eval(output)['stdout']
                 except:
                         return []
         else:
@@ -40,8 +41,7 @@ def main():
     parser.add_argument('-u', '--username', dest='username', help='Username')
     parser.add_argument('-p', '--password', dest='password', help='Password')
     parser.add_argument('--dcip', dest='dcip', default=0, help='KDC IP')
-    parser.add_argument('--start', dest='t_start', help='The start of the time interval')
-    parser.add_argument('--end', dest='t_end', help='The end of the time interval')
+    parser.add_argument('--counter', dest='counter', help='The counter')
     args = parser.parse_args()
 
     events_dict = {}
@@ -49,22 +49,10 @@ def main():
     user = str(args.username)
     password = str(args.password)
     dcip = str(args.password)
-    if args.t_start is None or args.t_end is None:
-        parser.print_help()
-        sys.exit(7)
-    start_time = str(args.t_start)
-    end_time = str(args.t_end)
+    counter = args.counter
 
-    output = run_command(ip, user, password, dcip, ("Get-WinEvent -FilterHashtable @{logname=\'application\';"
-                                                    "StartTime=\'" + start_time + "\';"
-                                                    "EndTime=\'" + end_time + "\';}"
-                                                    " | Format-Table "
-                                                    "TimeCreated,ID,Message -wrap "
-                                                    "-HideTableHeaders"))
-    for word in output:
-        if re.match(r'^\d+/\d+/\d+$', word):
-            print '\n'
-        print word,
+    run_command(ip, user, password, dcip, ("Get-Counter -Counter '{}'".format(counter)))
+
 
 if __name__ == "__main__":
     main()
