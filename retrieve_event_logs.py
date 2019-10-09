@@ -39,23 +39,25 @@ def main():
     parser.add_argument('-i', '--ip', dest='ip_address', help='IP Address')
     parser.add_argument('-u', '--username', dest='username', help='Username')
     parser.add_argument('-p', '--password', dest='password', help='Password')
-    parser.add_argument('--dcip', dest='dcip', default=0, help='KDC IP')
+    parser.add_argument('--dcip', dest='dcip', default="", help='KDC IP')
     parser.add_argument('--start', dest='t_start', help='The start of the time interval')
     parser.add_argument('--end', dest='t_end', help='The end of the time interval')
+    parser.add_argument('--log_type', dest='log_type', default="application", help='The logs type: application/system/etc.')
     args = parser.parse_args()
 
     events_dict = {}
     ip = str(args.ip_address)
     user = str(args.username)
     password = str(args.password)
-    dcip = str(args.password)
+    dcip = str(args.dcip)
     if args.t_start is None or args.t_end is None:
         parser.print_help()
         sys.exit(7)
     start_time = str(args.t_start)
     end_time = str(args.t_end)
 
-    output = run_command(ip, user, password, dcip, ("Get-WinEvent -FilterHashtable @{logname=\'application\';"
+    output = run_command(ip, user, password, dcip, ("Get-WinEvent -FilterHashtable @{logname=\'" + 
+                                                    args.log_type + "\';"
                                                     "StartTime=\'" + start_time + "\';"
                                                     "EndTime=\'" + end_time + "\';}"
                                                     " | Format-Table "

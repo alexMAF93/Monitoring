@@ -40,7 +40,7 @@ def main():
     parser.add_argument('-i', '--ip', dest='ip_address', help='IP Address')
     parser.add_argument('-u', '--username', dest='username', help='Username')
     parser.add_argument('-p', '--password', dest='password', help='Password')
-    parser.add_argument('--dcip', dest='dcip', default=0, help='KDC IP')
+    parser.add_argument('--dcip', dest='dcip', default="", help='KDC IP')
     parser.add_argument('--counter', dest='counter', help='The counter')
     args = parser.parse_args()
 
@@ -48,7 +48,7 @@ def main():
     ip = str(args.ip_address)
     user = str(args.username)
     password = str(args.password)
-    dcip = str(args.password)
+    dcip = str(args.dcip)
     counter = args.counter
 
     run_command(ip, user, password, dcip, ("Get-Counter -Counter '{}'".format(counter)))
