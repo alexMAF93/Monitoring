@@ -21,7 +21,7 @@ zenoss_data = {
     }]
 }
 
-.zenoss_data
+
 def event_handler(message, severity, event_class='/Cegeka/Eventlog', eventKey="", component=""):
     return {
         'eventClass': '%s' % event_class,
