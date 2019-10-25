@@ -88,7 +88,7 @@ def main():
         current_time = run_command(host, username, password, dcip, "Get-Date -UFormat '%d/%m/%Y %H:%M:%S'")
         last_file_command = "$file=(Get-ChildItem {} | sort LastWriteTime -Descending |\
  select -first 1); Write-Host $file.lastwritetime.ToString('dd/MM/yyyy HH:mm:ss')".format(file)
-        last_file_write_time = run_command(host, username, password, dcip, last_file_command)
+        last_file_write_time = run_command(host, username, password, dcip, last_file_command).replace('-', '/')
 
         if current_time and last_file_write_time:
             try:
