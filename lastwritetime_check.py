@@ -111,7 +111,9 @@ LastWriteTime: {}".format(file, time_dif, last_file_write_time)
 
             except Exception as e:
                 zenoss_data['events'].append(event_handler("Cannot convert output to datetime object; {}".format(e)
-                                                           , severity))
+                                                           , severity,
+                                                           eventKey='LastWriteTime check_date_conversion'
+                                                           ))
             print json.dumps(zenoss_data)
 
 
