@@ -40,7 +40,7 @@ def run_command(host, username, password, dcip, command):
                       '-p', password,
                       ]
     if dcip:
-        command_to_run.extend(['--dcip', dcip])
+        command_to_run.extend(['--dcip', dcip, '-a', 'kerberos'])
     command_to_run.extend(['-x', 'powershell -Outputformat TEXT -COMMAND "' + str(command) + '"'])
 
     try:
@@ -88,7 +88,9 @@ def main():
         current_time = run_command(host, username, password, dcip, "Get-Date -UFormat '%d/%m/%Y %H:%M:%S'")
         last_file_command = "$file=(Get-ChildItem {} | sort LastWriteTime -Descending |\
  select -first 1); Write-Host $file.lastwritetime.ToString('dd/MM/yyyy HH:mm:ss')".format(file)
-        last_file_write_time = run_command(host, username, password, dcip, last_file_command).replace('-', '/')
+        last_file_write_time = run_command(host, username, password, dcip, last_file_command)
+        if last_file_write_time:
+            last_file_write_time = last_file_write_time.replace('-', '/')
 
         if current_time and last_file_write_time:
             try:
@@ -114,7 +116,7 @@ LastWriteTime: {}".format(file, time_dif, last_file_write_time)
                                                            , severity,
                                                            eventKey='LastWriteTime check_date_conversion'
                                                            ))
-            print json.dumps(zenoss_data)
+        print json.dumps(zenoss_data)
 
 
 if __name__ == "__main__":

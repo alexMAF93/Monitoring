@@ -53,7 +53,7 @@ def main():
     # counter = args.counter
     for counter in list_of_counters:
         counter = counter.strip()
-	print('Checking %s ...' % counter)
+	    print('Checking %s ...' % counter)
         run_command(ip, user, password, dcip, ("Get-Counter -Counter '{}'".format(counter)))
 
 
