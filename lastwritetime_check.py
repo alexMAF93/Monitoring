@@ -17,7 +17,7 @@ zenoss_data = {
         'event_key': "LastWriteTime check",
         'component': "LastWriteTime check",
         'severity': 0,
-        'event_class': '/Cegeka/Eventlog'
+        'eventClass': '/Cegeka/Eventlog'
     }]
 }
 
