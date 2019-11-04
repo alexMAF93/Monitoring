@@ -1,38 +1,41 @@
 #!/usr/bin/env bash
 
 
-# testing the ssh key
-
 usage() {
-cat<<EOF
-    Usage: $0 IP HOSTNAME
+cat << EOF
+Usage: $0 /path/to/file
 
+The file must contain the lines you want to add in the /etc/hosts file on
+the servers.
+After you press ENTER, you'll be asked for the servers you want the lines to
+be added on.
 
-    After calling the script, you will have to enter the servers where
-you want the /etc/hosts file modified.
 EOF
-exit 0
 }
 
 
-if [[ $# -ne 2 ]]
+if [[ $# -lt 1 ]]
 then
-    usage
+	usage
+	exit 7
 fi
 
 
-IP=$1
-hostname=$2
-printf "Enter the servers where you want to modify the file:\n"
+FILE=$1
+echo "Enter the servers below and press CTRL+D"
 SERVERS=`cat`
 
+NO_LINES=`cat $1 | wc -l`
 
 for server in $SERVERS
 do
-        printf "Working on ${server}...\n"
-        ssh $server "echo $IP $hostname >> /etc/hosts"
-        printf "Added the entry in the /etc/hosts file\n"
-        ssh $server "systemctl restart dnsmasq"
-        printf "Restarted the dnsmasq service\nMoving on...\n\n\n"
+	echo "Working on $server ..."
+	for i in `seq 1 $NO_LINES`
+	do
+		LINE=`awk NR==$i $FILE`
+		ssh $server "echo $LINE >> /etc/hosts; grep -q \"$LINE\" /etc/hosts && echo Line added || echo The line $LINE was not added"
+	done
+	echo "Restarting the DNSMASQ service..."
+	ssh $server "systemctl restart dnsmasq"
 done
 
