@@ -25,19 +25,27 @@ CI00041958;C:\\CegekaUpdater\\Updater.log;8;4
 """.format(sys.argv[0])
 
 
-def check_if_dcip(z, uid):
+def check_if_dcip(z, uid, collector):
     KDC = z.get_specific_zen_property(uid, 'zWinKDC', '')['result']['data'][0]['value']
-    if KDC:
+    UserName = z.get_specific_zen_property(uid, 'zWinRMUser', '')['result']['data'][0]['value']
+    if KDC and '@' in UserName:
+        info = z.get_info(uid)
+        f = open('/tmp/log_import.txt', 'a')
+        f.write(collector + " " + info['result']['data']['ipAddressString'] + " " + z.get_specific_zen_property(uid, 'zWinRMServerName', '')['result']['data'][0]['value'] + '\n') 
+        f.close()
         print colored.green('INFO :'), 'The KDC is {}'.format(KDC)
         return True
     print colored.green('INFO :'), 'The KDC is empty'
     return False
 
 
-def bind_template(z, uid, file_path, time_dif, severity):
+def bind_template(z, uid, file_path, time_dif, severity, collector):
     fp = file_path.replace(':', '').replace('.', '').replace('\\', '_').replace('__', '_')
     print colored.green('INFO :'), 'binding the LastWriteTime_check template'
     templates = [x[0] for x in z.get_bound_templates(uid=uid)]
+    f = open('/tmp/log_import.txt', 'a')
+    f.write(uid + '\n')
+    f.close()
 
     # Bind the LastWriteTime_check template
     if 'LastWriteTime_check' not in templates:
@@ -65,15 +73,32 @@ def bind_template(z, uid, file_path, time_dif, severity):
     else: 
         print colored.red('ERROR:'), 'add data source FAILED'
 
+    WinScheme = z.get_specific_zen_property(uid, 'zWinScheme', '')['result']['data'][0]['value']
+    ServerName = '${dev/zWinRMServerName}'
+    if WinScheme == 'https':
+        WinRMPort = z.get_specific_zen_property(uid, 'zWinRMPort', '')['result']['data'][0]['value']
+        ServerName = 'https://' + ServerName + ':{}'.format(WinRMPort)
+
     # Modifying the datasource
-    if check_if_dcip(z, uid):
-        commandTemplate = "/opt/zenoss/scripts/checks/lastwritetime_check.py -r ${{dev/zWinRMServerName}} -u '${{dev/zWinRMUser}}' \
+    if check_if_dcip(z, uid, collector):
+        if z.get_specific_zen_property(uid, 'zWinRMServerName', '')['result']['data'][0]['value']:
+            commandTemplate = "/opt/zenoss/scripts/checks/lastwritetime_check.py -r {servername} -u '${{dev/zWinRMUser}}' \
+-p '${{dev/zWinRMPassword}}' -f '{file}' -t {time_dif} -s {severity} --dcip ${{dev/zWinKDC}}\
+".format(servername=ServerName, file=file_path, time_dif=time_dif, severity=severity)
+        else:
+            commandTemplate = "/opt/zenoss/scripts/checks/lastwritetime_check.py -r ${{dev/manageIp}} -u '${{dev/zWinRMUser}}' \
 -p '${{dev/zWinRMPassword}}' -f '{file}' -t {time_dif} -s {severity} --dcip ${{dev/zWinKDC}}\
 ".format(file=file_path, time_dif=time_dif, severity=severity)
     else:
         commandTemplate = "/opt/zenoss/scripts/checks/lastwritetime_check.py -r ${{dev/manageIp}} -u '${{dev/zWinRMUser}}' \
 -p '${{dev/zWinRMPassword}}' -f '{file}' -t {time_dif} -s {severity}\
 ".format(file=file_path, time_dif=time_dif, severity=severity)
+    
+
+    UseWsman = z.get_specific_zen_property(uid, 'zWinUseWsmanSPN', '')['result']['data'][0]['value']
+    if UseWsman:
+        commandTemplate = commandTemplate + ' --service wsman'
+
 
     print colored.green('INFO :'), 'Updating the datasource'
     print colored.green('INFO :'), 'Command used: {}'.format(commandTemplate)
@@ -116,14 +141,15 @@ def main():
                         deviceClass = deviceinfo['deviceClass']
                         if 'Windows/Base' in deviceClass:
                             uid = deviceinfo['uid']
-                            components = z.get_dev_components(uid)
-                            for component in components['result']['data']:
-                                if component['name'] == 'Cegeka.UpdaterService':
-                                    bind_template(z, uid, file_path, time_dif, severity)
-                                    break
-                            else:
-                                print colored.yellow('INFO :'), '{} does not have the Cegeka.UpdaterService service. \
-        This CI will be skipped.'.format(CI)
+                            #components = z.get_dev_components(uid)
+                            #for component in components['result']['data']:
+                            #    if component['name'] == 'Cegeka.UpdaterService':
+                            collector = deviceinfo['collector']
+                            bind_template(z, uid, file_path, time_dif, severity, collector)
+                           #         break
+                           # else:
+                           #     print colored.yellow('INFO :'), '{} does not have the Cegeka.UpdaterService service. \
+       # This CI will be skipped.'.format(CI)
                         else:
                             raise Exception('{} is not monitored through WinRM'.format(CI))
                     except Exception as e:
