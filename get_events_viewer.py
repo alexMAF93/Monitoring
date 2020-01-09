@@ -46,7 +46,7 @@ def parse_output(output):
 
 def main():
     get_events = "Get-WinEvent -FilterHashtable @{logname=\'application\';StartTime=\'%s\';EndTime=\'%s\'} | Format-Table TimeCreated,ID,Message -wrap -HideTableHeaders" % (sys.argv[1], sys.argv[2])   
-    parsed_output = parse_output(run_command('172.18.5.205', 'srv_WinRM@prd.domain', '=rEvahiw5uCHLxL$imiq', '172.23.125.10', get_events))
+    parsed_output = parse_output(run_command('ip', 'user', 'password', 'dcip', get_events))
     events_dict = {} # dictionary with events from event viewer
     REGEX_TIME = '^\d+:\d+:\d+$' # regex for the date
     REGEX_DATE = '^\d+/\d+/\d+$' # regex for the time
