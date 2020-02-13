@@ -8,7 +8,6 @@ import secrets
 import re
 from cmdb import Usd12
 import json
-import pdb
 
 
 PASSWORDS = {
@@ -130,7 +129,6 @@ def main():
             eventKey = event.split()[2]
             event_handler(message, severity, eventKey=eventKey, component=component)
 
-    pdb.set_trace()
     exitscript()
 
 
