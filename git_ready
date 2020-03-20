@@ -37,7 +37,7 @@ files=$(git status | egrep 'modified|new file' | cut -d: -f2 | sort | uniq)
 
 
 # if you have unmodified files, there's nothing to do
-if [[ "$status" ]]
+if [[ "$files" ]]
 then
 	printf 'These files must be checked:\n'
 	echo "$status" | grep modified | cut -d':' -f2
