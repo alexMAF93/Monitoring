@@ -32,7 +32,7 @@ function check_line_sep() {
 }
 
 
-status=$(git status || exit 27)
+git status &> /dev/null || { printf 'Not a repository ...\n'; exit 27; }
 files=$(git status | egrep 'modified|new file' | cut -d: -f2 | sort | uniq)
 
 
@@ -40,13 +40,13 @@ files=$(git status | egrep 'modified|new file' | cut -d: -f2 | sort | uniq)
 if [[ "$files" ]]
 then
 	printf 'These files must be checked:\n'
-	echo "$status" | grep modified | cut -d':' -f2
+        echo "$file" 
 else
 	printf 'Nothing to do...\n'
 	exit 0
 fi
 
-printf '\n\n'
+printf '\n'
 
 
 # checking the git permissions
