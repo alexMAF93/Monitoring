@@ -1,0 +1,65 @@
+#!/bin/bash
+
+
+function check_perms() {
+	file=$1
+	permissions=$(git ls-files -s $file | cut -d' ' -f1)
+	printf "${permissions:3:5} $file\n"
+	if [[ ${permissions:3:5} -eq 755 ]]
+        then
+		printf "      OK\n"
+	else
+		printf "      NOK\n"
+		printf "Changing permissions ...\n"
+		git update-index --chmod=+x $file
+		check_perms $file
+	fi
+}
+
+
+function check_line_sep() {
+	file=$1
+	if file $file | grep -q "CRLF"
+	then
+		printf '      NOK\n'
+		printf "Changing the EOL for $file ...\n"
+		dos2unix $file
+		check_line_sep $file
+		file $file
+	else
+		printf '      OK\n'
+	fi
+}
+
+
+status=$(git status || exit 27)
+files=$(git status | egrep 'modified|new file' | cut -d: -f2 | sort | uniq)
+
+
+# if you have unmodified files, there's nothing to do
+if [[ "$status" ]]
+then
+	printf 'These files must be checked:\n'
+	echo "$status" | grep modified | cut -d':' -f2
+else
+	printf 'Nothing to do...\n'
+	exit 0
+fi
+
+printf '\n\n'
+
+
+# checking the git permissions
+for file in $files
+do
+	printf "\nChecking if $file is executable ...\n" 
+	check_perms $file
+done
+
+	
+# checking the line ending
+for file in $files
+do
+	printf "\nChecking the line separator for $file ...\n"
+	check_line_sep $file
+done
