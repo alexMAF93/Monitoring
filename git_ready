@@ -24,8 +24,8 @@ function check_line_sep() {
 		printf '      NOK\n'
 		printf "Changing the EOL for $file ...\n"
 		dos2unix $file
-		check_line_sep $file
 		file $file
+		check_line_sep $file
 	else
 		printf '      OK\n'
 	fi
