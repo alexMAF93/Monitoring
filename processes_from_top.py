@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 """
-
 Usage: ./top_linux_processes.py IP username N processes
 
 This script retrieves the N most CPU intensive processes from a
