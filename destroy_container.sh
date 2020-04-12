@@ -37,11 +37,15 @@ then
 fi
 
 
+no_words=`echo $line | wc -w`
 line_no=`echo $line | awk '{print $1}' | cut -d':' -f1`
 host=`echo $line | awk '{print $12}'`
 type=`echo $line | awk '{print $2}' | cut -d'/' -f1`
-instance_number=`echo $line | awk '{print $2}' | cut -d'/' -f2`
-
+instance_number=0
+if [[ "$(echo $line | awk '{print $2}')" =~ "/" ]]
+then
+	instance_number=`echo $line | awk '{print $2}' | cut -d'/' -f2`
+fi
 for current_line in $CollectorLines
 do
 	line_nmb=`echo $current_line | cut -d: -f1`
@@ -63,19 +67,19 @@ printf "%-15s : %-s\n\n" "Instance number" "$instance_number"
 
 
 # if it's a Crelan zencommand container, ask for confirmation
-if [[ "$line" =~ "zencommand" ]] && [[ "$line" =~ "crelan" ]]
-then
-	read -p "This is a Crelan zencommand container. Are you sure you want to destroy it? [y/n] " confirm
-	case "$confirm" in
-		y|Y) ;;
-		n|N) printf "The container will not be destroyed\n"
-	     	     exit 0
-                     ;;
-		*) printf "Invalid choice\n"
-	           exit 27
-	           ;;
-	esac
-fi
+#if [[ "$line" =~ "zencommand" ]] && [[ "$line" =~ "crelan" ]]
+#then
+#	read -p "This is a Crelan zencommand container. Are you sure you want to destroy it? [y/n] " confirm
+#	case "$confirm" in
+#		y|Y) ;;
+#		n|N) printf "The container will not be destroyed\n"
+#	     	     exit 0
+#                     ;;
+#		*) printf "Invalid choice\n"
+#	           exit 27
+#	           ;;
+#	esac
+#fi
 
 
 destroyed=`ssh $host "docker stop $1 || echo N_OK"`
