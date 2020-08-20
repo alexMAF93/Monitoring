@@ -85,9 +85,9 @@ def bind_template(z, CI, datapoints):
         print colored.blue('INFO :'), 'Adding the graph points.'
         for dp in datapoints:
             if z.add_data_point_to_graph(ds_uid + '/datapoints/{}'.format(dp), g_uid=uid+'/CgkCheckAdapters/graphDefs/Adapters Status')['result']['success']:
-                print colored.green('INFO :'), 'Graph point {} added'.format(dp)
+                print colored.green('INFO :'), 'Graph point {} added to Adapters Status'.format(dp)
             else:
-                print colored.red('ERROR:'), 'Cannot add graph point {}'.format(dp)
+                print colored.red('ERROR:'), 'Cannot add graph point {} to Adapters Status'.format(dp)
         
         print colored.blue('INFO :'), 'Adding the thresholds.'
         for dp in datapoints:
@@ -97,7 +97,7 @@ def bind_template(z, CI, datapoints):
                 if z.set_template_info(data={'dsnames': 'check_adapters_{}'.format(dp), 'maxval': 1,
                         'eventClass': '/Cmd/Fail', 'uid': uid + '/CgkCheckAdapters/thresholds/' +threshold_name,
                         'severity' : 4})['result']['success']:
-                    print colored.green('INFO :'), 'Threshold updated.'
+                    print colored.green('INFO :'), 'Threshold updated with ds={}; max_val={}.'.format('check_adapters_{}'.format(dp), 1)
                 else:
                     print colored.red('ERROR:'), 'Cannot update the threshold.'
             else:
@@ -109,7 +109,7 @@ def bind_template(z, CI, datapoints):
                 if z.set_template_info(data={'dsnames': 'check_adapters_{}'.format(dp), 'maxval': 0,
                         'eventClass': '/Cmd/Fail', 'uid': uid + '/CgkCheckAdapters/thresholds/' +threshold_name,
                         'severity' : 3})['result']['success']:
-                    print colored.green('INFO :'), 'Threshold updated.'
+                    print colored.green('INFO :'), 'Threshold updated with ds={}; max_val={}.'.format('check_adapters_{}'.format(dp), 0)
                 else:
                     print colored.red('ERROR:'), 'Cannot update the threshold.'
             else:
@@ -123,13 +123,13 @@ def main():
     z = ZenossAPI()
     text_file = sys.argv[1]
     with open(text_file, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                CI = line.split(';')[0]
-                print colored.blue('='*30)
-                print colored.blue('Working on {}...'.format(CI))
-                datapoints = [dp.replace('\n', '') for dp in line.split(';')[1:]]
-                bind_template(z, CI, datapoints)
+        lines = f.readlines()
+        for line in lines:
+            CI = line.split(';')[0]
+            print colored.blue('='*30)
+            print colored.blue('Working on {}...'.format(CI))
+            datapoints = [dp.replace('\n', '') for dp in line.split(';')[1:]]
+            bind_template(z, CI, datapoints)
 
 
 if __name__ == "__main__":
