@@ -1,11 +1,16 @@
+#!/usr/bin/env python
+
+
 from zen import ZenossAPI
 from clint.textui import colored
 import sys
 import os
+import sys
 z = ZenossAPI()
 
-template_uid = '/zport/dmd/Devices/Network/BIG-IP/rrdTemplates/BigIpDevice'
-new_template_uid = '/zport/dmd/Devices/Network/BIG-IP/rrdTemplates/CgkBigip'
+
+template_uid = sys.argv[1] # '/zport/dmd/Devices/Network/BIG-IP/rrdTemplates/BigIpDevice'
+new_template_uid = sys.argv[2] # '/zport/dmd/Devices/Network/BIG-IP/rrdTemplates/CgkBigip'
 
 
 # copy datasources
@@ -83,7 +88,7 @@ print colored.blue('\nINFO :'), 'Copying the graphs.'
 all_datapoints = [x['uid'] for x in z.get_data_points(new_template_uid)['result']['data']]
 all_thresholds = [x['uid'] for x in z.get_thresholds(new_template_uid)['result']['data']]
 for graph in z.list_graphs(template_uid)['result']:
-    print colored.blue('INFO :'), '\nAdding {}'.format(graph['id'])
+    print colored.blue('\nINFO :'), 'Adding {}'.format(graph['id'])
     if z.add_graph(new_template_uid, graph['id'])['result']['success']:
         print colored.green("\tGraph created successfully.")
     else:
@@ -103,7 +108,6 @@ for graph in z.list_graphs(template_uid)['result']:
         print 'Graph Units set to {}'.format(graph['units'])
     else:
         print 'Cannot set Graph Units.'
-
     datapoints_to_graph = []
     thresholds_to_graph = []
     for gp in z.get_graph_points(graph['uid'])['result']['data']:
@@ -116,25 +120,35 @@ for graph in z.list_graphs(template_uid)['result']:
     for new_gp in datapoints_to_graph:
         print colored.blue('INFO :'), 'Adding graph point {}.'.format(new_gp['id'])
         for gp_uid in all_datapoints:
-            if new_gp['id'] in gp_uid:
+            if new_gp['dpName'].split('_')[0] == gp_uid.split('/')[-1]:
                 if z.add_data_point_to_graph(gp_uid, new_graph_uid)['result']['success']:
-                    print colored.green('\t{} added to the graph successfully.'.format(new_gp))
-                    if new_gp['lineType'] in ('Line', 'Area'):
-                    	line_type = new_gp['lineType']
+                    print colored.green('\t{} added to the graph successfully.'.format(new_gp['name']))
+                    change_line_type = False
+                    if new_gp['lineType'] not in ('AREA', 'LINE'):
+                        line_type = 'LINE'
+                        change_line_type = True
                     else:
-                    	line_type = None
-                    z.import_update_graph_point_template(template_uid, 
-                    	template_uid.split('/')[-1],
-                    	new_graph['id'], 
-                    	new_gp['id'], 
-                    	line_type=line_type, 
-                    	line_width=new_gp['lineWidth'], 
-                    	stacked=new_gp['stacked'], 
-                    	rpn=new_gp['rpn'], 
-                    	format=new_gp['format'], 
-                    	color=new_gp['color'], 
-                    	legend=new_gp['legend'], 
-                    	indent=0)
+                        line_type = new_gp['lineType']
+                    just_added_graph_point_uid = z.get_graph_points(new_graph_uid)['result']['data'][-1]['uid']
+                    new_graph_point_name = just_added_graph_point_uid.split('/')[-1]
+                    z.import_update_graph_point_template(new_template_uid, 
+                        new_template_uid.split('/')[-1],
+                        new_graph['id'], 
+                        new_graph_point_name,
+                        line_type=line_type, 
+                        line_width=new_gp['lineWidth'], 
+                        stacked=new_gp['stacked'], 
+                        rpn=new_gp['rpn'], 
+                        format=new_gp['format'], 
+                        color=new_gp['color'], 
+                        legend=new_gp['legend'], 
+                        )
+                    if change_line_type:
+                        z.set_template_info({'uid': just_added_graph_point_uid, 'lineType': new_gp['lineType']})
+                        print colored.blue('INFO :'), 'Line type changed to {}'.format(new_gp['lineType'])
+                    if just_added_graph_point_uid.split('/')[-1] != new_gp['id']:
+                        z.set_template_info({'uid': just_added_graph_point_uid, 'newId': new_gp['id']})
+                        print 'Changed graph point name to : {}'.format(new_gp['id'])
                 else:
                     print colored.red('\tCannot add {} to the graph.'.format(new_gp))
                 break
@@ -142,10 +156,9 @@ for graph in z.list_graphs(template_uid)['result']:
             print colored.red('ERROR:'), 'Failed to add {} to the graph.'.format(new_gp)
 
     for new_gp in thresholds_to_graph:
-        new_gp = new_gp.strip()
-        print colored.blue('INFO :'), 'Adding threshold {} to the graph.'.format(new_gp)
+        print colored.blue('INFO :'), 'Adding threshold {} to the graph.'.format(new_gp['id'])
         for th_uid in all_thresholds:
-            if new_gp in gp_uid:
+            if new_gp['id'] in th_uid:
                 if z.add_threshold_to_graph(th_uid, new_graph_uid)['result']['success']:
                     print colored.green('\t{} added to the graph successfully.'.format(new_gp))
                 else:
