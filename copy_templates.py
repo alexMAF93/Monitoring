@@ -6,6 +6,7 @@ from clint.textui import colored
 import sys
 import os
 import sys
+from time import sleep
 z = ZenossAPI()
 
 
@@ -13,8 +14,6 @@ template_uid = sys.argv[1] # '/zport/dmd/Devices/Network/BIG-IP/rrdTemplates/Big
 new_template_uid = sys.argv[2] # '/zport/dmd/Devices/Network/BIG-IP/rrdTemplates/CgkBigip'
 
 
-# copy datasources
-print colored.blue('\nINFO :'), 'Copying the datasources.'
 def find_datasource_name(template_uid, ds_name):
     for datasource in z.get_data_sources(template_uid)['result']['data']:
         if datasource['name'] == ds_name:
@@ -29,10 +28,10 @@ def check_if_ds_exists(datasource, ds_name, cnt=1):
     if ds_present[0]:
         existing_ds = ds_present[1]
         if datasource['source'] == existing_ds['source']:
-            print colored.blue('INFO :'), 'Datasource on {} uses the same OID. Nothing to do.'.format(new_template_uid.split('/')[-1])
+            print colored.blue('INFO :'), 'Datasource on {} has the same source: {}. Nothing to do.'.format(new_template_uid.split('/')[-1], existing_ds['source'])
             return True, existing_ds['name']
         else:
-            print colored.blue('INFO :'), 'Datasource {} on {} uses a different OID.'.format(ds_name, new_template_uid.split('/')[-1])
+            print colored.blue('INFO :'), 'Datasource {} on {} uses a different source.'.format(ds_name, new_template_uid.split('/')[-1])
             cnt+=1
             new_ds_name = '{}_{}'.format(existing_ds['name'], cnt)
             return check_if_ds_exists(datasource, new_ds_name, cnt)
@@ -41,37 +40,72 @@ def check_if_ds_exists(datasource, ds_name, cnt=1):
         return False, ds_name
 
 
+# copy datasources
+print colored.blue('\nINFO :'), 'Copying the datasources.'
 for datasource in z.get_data_sources(template_uid)['result']['data']:
+    sleep(1)
     print colored.blue('INFO :'), 'Trying to add {} on {}'.format(datasource['name'], new_template_uid.split('/')[-1])
+
     ds_to_add = check_if_ds_exists(datasource, datasource['name'])
     if not ds_to_add[0]:
         t_name = ds_to_add[1]
+        dp_details = z.get_data_point_details('{}/datapoints/{}'.format(datasource['uid'], datasource['name']))['result']['record']
+        # ^ in order to check the rrdType
+
         if z.add_data_source(new_template_uid, t_type=datasource['type'], t_name=t_name)['result']['success']:
-            print 'Datasource {} created.'.format(datasource['name'])
-            if z.set_template_info( data = {
-                'oid': datasource['source'],
-                'component': datasource['component'],
-                'enabled': datasource['enabled'],
-                'eventClass': datasource['eventClass'],
-                'severity': datasource['severity'],
-                'uid': '{}/datasources/{}'.format(new_template_uid, t_name)
-            })['result']['success']:
-                print colored.green('\tThe datasource was updated')
-            else:
-                print colored.red('\tThe datasource was not updated')
+            print 'Datasource {} created. Type: {}'.format(datasource['name'], datasource['type'])
+            if datasource['type'] == 'SNMP':
+                    if z.set_template_info( data = {
+                        'oid': datasource['source'],
+                        'component': datasource['component'],
+                        'enabled': datasource['enabled'],
+                        'eventClass': datasource['eventClass'],
+                        'severity': datasource['severity'],
+                        'uid': '{}/datasources/{}'.format(new_template_uid, t_name)
+                    })['result']['success']:
+                        print colored.green('\tThe datasource was updated')
+                    else:
+                        print colored.red('\tThe datasource was not updated')
+            elif datasource['type'] == 'COMMAND':
+                ds_details = z.get_data_source_details(datasource['uid'])['result']['record']
+                cycletime = ds_details['cycletime']
+                parser = ds_details['parser']
+                usessh = ds_details['usessh']
+                if z.set_template_info( data = {
+                    'commandTemplate': datasource['source'],
+                    'component': datasource['component'],
+                    'enabled': datasource['enabled'],
+                    'eventClass': datasource['eventClass'],
+                    'eventKey': datasource['eventKey'],
+                    'severity': datasource['severity'],
+                    'parser': parser,
+                    'cycletime': cycletime,
+                    'usessh': usessh,
+                    'uid': '{}/datasources/{}'.format(new_template_uid, t_name)
+                })['result']['success']:
+                    print colored.green('\tThe datasource was updated')
+                else:
+                    print colored.red('\tThe datasource was not updated')
+
+            new_dp_details = z.get_data_point_details('{}/datapoints/{}'.format('{}/datasources/{}'.format(new_template_uid, t_name), datasource['name']))['result']['record']
+            if dp_details['rrdtype'] != new_dp_details['rrdtype']:
+                if z.set_template_info({'uid': new_dp_details['uid'], 'rrdtype': dp_details['rrdtype']})['result']['success']:
+                    print colored.green('\tChanged RRDTYPE to {} for datapoint {}'.format(dp_details['rrdtype'], dp_details['name']))
+                else:
+                    print colored.red('Cannot change RRDTYPE')
         else:
             print colored.red('\tDatasource {} not created.'.format(t_name))
     print '\n'
-    #ds_to_del.append(t_name)
 
 
 # copy thresholds
 print colored.blue('\nINFO :'), 'Copying the thresholds.'
 for threshold in z.get_thresholds(template_uid)['result']['data']:
+    sleep(1)
     if z.add_threshold(new_template_uid, threshold['name'], threshold_type=threshold['type'])['result']['success']:
         print 'Threshold {} added.'.format(threshold['name'])
-        z.update_threshold_data(template_uid, 
-                template_uid.split('/')[-1], 
+        z.update_threshold_data(new_template_uid, 
+                new_template_uid.split('/')[-1], 
                 threshold['name'], 
                 dsnames=threshold['dsnames'], 
                 severity=threshold['severity'],
@@ -88,6 +122,7 @@ print colored.blue('\nINFO :'), 'Copying the graphs.'
 all_datapoints = [x['uid'] for x in z.get_data_points(new_template_uid)['result']['data']]
 all_thresholds = [x['uid'] for x in z.get_thresholds(new_template_uid)['result']['data']]
 for graph in z.list_graphs(template_uid)['result']:
+    sleep(1)
     print colored.blue('\nINFO :'), 'Adding {}'.format(graph['id'])
     if z.add_graph(new_template_uid, graph['id'])['result']['success']:
         print colored.green("\tGraph created successfully.")
@@ -140,7 +175,7 @@ for graph in z.list_graphs(template_uid)['result']:
                         stacked=new_gp['stacked'], 
                         rpn=new_gp['rpn'], 
                         format=new_gp['format'], 
-                        color=new_gp['color'], 
+                        color=new_gp['color'].replace('#', ''), 
                         legend=new_gp['legend'], 
                         )
                     if change_line_type:
@@ -160,7 +195,7 @@ for graph in z.list_graphs(template_uid)['result']:
         for th_uid in all_thresholds:
             if new_gp['id'] in th_uid:
                 if z.add_threshold_to_graph(th_uid, new_graph_uid)['result']['success']:
-                    print colored.green('\t{} added to the graph successfully.'.format(new_gp))
+                    print colored.green('\t{} added to the graph successfully.'.format(new_gp['id']))
                 else:
                     print colored.red('\tCannot add {} to the graph.'.format(new_gp))
                 break
