@@ -1,0 +1,343 @@
+/Network/BIG-IP/VCMP/LTM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VCMP/HA/LTM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/LTM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/HA/LTM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/LTM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/HA/LTM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VCMP/LTM-APM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VCMP/HA/LTM-APM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/LTM-APM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/HA/LTM-APM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/LTM-APM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/HA/LTM-APM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VCMP/LTM-ASM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VCMP/HA/LTM-ASM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/LTM-ASM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/HA/LTM-ASM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/LTM-ASM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/HA/LTM-ASM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5CPU',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VCMP/LTM-APM-ASM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VCMP/HA/LTM-APM-ASM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/LTM-APM-ASM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/VE/HA/LTM-APM-ASM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/LTM-APM-ASM
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/APP/HA/LTM-APM-ASM
+[u'CgkF5SyncStatus',
+ u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CertificateCheck',
+ u'CgkF5VpnConn',
+ u'CgkF5ASMLearningDbCheck',
+ u'CgkF5CPU',
+ u'CgkF5Apm',
+ u'CgkF5LTM',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkSslTps',
+ u'CgkBigip']
+
+
+/Network/BIG-IP/HYPERVISOR
+[u'CgkBigipCluster',
+ u'CgkF5Memory',
+ u'CgkF5CPU',
+ u'CgkF5HagroupStatus',
+ u'Device',
+ u'CgkBigip']
