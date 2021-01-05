@@ -51,7 +51,7 @@ def main():
                 f = open(file_name, 'w')
                 f.write('{};{};{};{};{}'.format(device['name'], device['ipAddressString'], username, password, zenoss_device['snmpCommunity']))
                 f.close()
-                add_command = "/opt/zenoss/scripts/add_f5_device.py --file {} -u monapps -p 'HfWkeIpEgIyXC8NwsTsH' -d".format(file_name)
+                add_command = "/opt/zenoss/scripts/add_f5_device.py --file {} -u monapps -p '***' -d".format(file_name)
                 stdout, stderr = Popen(add_command, stdout=PIPE, stderr=PIPE, shell=True).communicate()
                 print stdout
                 print stderr
